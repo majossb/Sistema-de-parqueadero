@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - Sistema de Parqueadero</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+</head>
+<body>
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-p-square"></i> Sistema de Parqueadero
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registrarEntradaModal">
+                        <i class="bi bi-car-front"></i> Registrar Entrada
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-list-ul"></i> Reportes
+                    </a>
+                </li>
+            </ul>
+            <form th:action="@{/logout}" method="post" class="d-flex">
+                <button class="btn btn-outline-light" type="submit">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido principal -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="bi bi-table"></i> Registros de Entradas y Salidas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Placa</th>
+                                <th>Tipo</th>
+                                <th>Hora Entrada</th>
+                                <th>Hora Salida</th>
+                                <th>Ubicación</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="entrada : ${entradas}">
+                                <td th:text="${entrada.id}"></td>
+                                <td th:text="${entrada.placa}"></td>
+                                <td th:text="${entrada.tipoVehiculo.nombre}"></td>
+                                <td th:text="${entrada.horaEntrada}"></td>
+                                <td>
+                                    <span th:if="${entrada.horaSalida != null}" th:text="${entrada.horaSalida}"></span>
+                                    <span th:unless="${entrada.horaSalida != null}" class="badge bg-warning text-dark">En parqueadero</span>
+                                </td>
+                                <td th:text="${entrada.ubicacion}"></td>
+                                <td>
+                                    <button th:if="${entrada.horaSalida == null}"
+                                            class="btn btn-sm btn-success"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#registrarSalidaModal"
+                                            th:attr="data-id=${entrada.id}">
+                                        <i class="bi bi-check-circle"></i> Registrar Salida
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Entrada -->
+<div class="modal fade" id="registrarEntradaModal" tabindex="-1" aria-labelledby="registrarEntradaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="registrarEntradaModalLabel">Registrar Nueva Entrada</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/entradas}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="placa" class="form-label">Placa del Vehículo</label>
+                        <input type="text" class="form-control" id="placa" name="placa" maxlength="6" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipoVehiculo" class="form-label">Tipo de Vehículo</label>
+                        <select class="form-select" id="tipoVehiculo" name="tipoVehiculoId" required>
+                            <option value="">Seleccione un tipo...</option>
+                            <option th:each="tipo : ${tiposVehiculo}"
+                                    th:value="${tipo.id}"
+                                    th:text="${tipo.nombre}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="horaEntrada" class="form-label">Hora de Entrada</label>
+                        <input type="number" class="form-control" id="horaEntrada" name="horaEntrada" min="0" max="23" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ubicacion" class="form-label">Ubicación</label>
+                        <input type="text" class="form-control" id="ubicacion" name="ubicacion" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar Entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Salida -->
+<div class="modal fade" id="registrarSalidaModal" tabindex="-1" aria-labelledby="registrarSalidaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="registrarSalidaModalLabel">Registrar Salida</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/entradas/{id}/salida(id=*{id})}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="entradaId" name="id">
+                    <div class="mb-3">
+                        <label for="horaSalida" class="form-label">Hora de Salida</label>
+                        <input type="number" class="form-control" id="horaSalida" name="horaSalida" min="0" max="23" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Registrar Salida</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Script para manejar el modal de registrar salida
+    document.getElementById('registrarSalidaModal').addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var entradaId = button.getAttribute('data-id');
+        var modal = this;
+        modal.querySelector('#entradaId').value = entradaId;
+    });
+</script>
+</body>
+</html>
